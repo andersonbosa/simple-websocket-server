@@ -1,51 +1,82 @@
-import { WebSocket } from "ws"
+import { WebSocket } from "ws";
 
-const { PORT = 8080 } = process.env
+const { PORT = 8080 } = process.env;
+const SERVER_URL = `ws://localhost:${PORT}`;
 
-const connect = () => new WebSocket(`ws://localhost:${PORT}`)
+const timestamp = () => new Date().toISOString();
 
-const timestamp = () => new Date().toISOString()
+let socket = null;
+let retryCount = 0;
+const maxRetries = 10;
 
 /**
- * @param {WebSocket} wSocket 
- * @returns WebSocket
+ * Conecta ao servidor WebSocket
+ * @returns {WebSocket}
  */
-function addListeners(wSocket) {
-    wSocket.on('message', (event) => {
-        console.log(timestamp(), 'Mensagem recebida:', event.data)
-    })
-    wSocket.on('open', (ws) => {
-        console.log(timestamp(), 'Conectado ao servidor WebSocket')
-        setInterval(() => { wSocket.ping() }, 1000)
-    })
-    wSocket.on('pong', (data) => {
-        console.log(timestamp(), '[PONG]', data.length)
-    })
-    wSocket.on('error', (error) => {
-        console.error('Erro:', error)
-    })
-    wSocket.on('close', () => {
-        console.log(timestamp(), 'Conexão fechada')
-        let retryCount = 0
-        const maxRetries = 10
-        const retryInterval = setInterval(() => {
-            if (retryCount < maxRetries) {
-                retryCount++
-                console.log(timestamp(), `Tentativa de reconexão ${retryCount} de ${maxRetries}`)
-                const newSocket = connect()
-                newSocket.on('open', () => {
-                    clearInterval(retryInterval)
-                    console.log(timestamp(), 'Reconectado ao servidor WebSocket')
-                    addListeners(newSocket)
-                })
-                return newSocket
-            }
-            clearInterval(retryInterval)
-            console.log(timestamp(), 'Número máximo de tentativas atingido')
-        }, 1000)
-    })
-    return wSocket
+function connect() {
+    console.log(timestamp(), `[INFO] Conectando ao WebSocket...`);
+    const ws = new WebSocket(SERVER_URL);
+    addListeners(ws);
+    return ws;
 }
 
-const socket = connect()
-addListeners(socket)
+/**
+ * Adiciona listeners ao WebSocket
+ * @param {WebSocket} ws
+ */
+function addListeners(ws) {
+    ws.on("open", () => {
+        console.log(timestamp(), "[INFO] Conectado ao WebSocket");
+        retryCount = 0; // Reset da contagem de reconexões
+        setInterval(() => ws.ping(), 5000);
+    });
+
+    ws.on("message", (event) => {
+        console.log(timestamp(), "[RECEIVED]", event.toString());
+    });
+
+    ws.on("pong", () => {
+        console.log(timestamp(), "[PONG] Cliente ativo");
+    });
+
+    ws.on("error", (error) => {
+        console.error(timestamp(), "[ERROR]", error.message);
+    });
+
+    ws.on("close", () => {
+        console.log(timestamp(), "[INFO] Conexão fechada. Tentando reconectar...");
+        reconnect();
+    });
+}
+
+/**
+ * Lida com a reconexão automática
+ */
+function reconnect() {
+    if (retryCount < maxRetries) {
+        retryCount++;
+        setTimeout(() => {
+            console.log(timestamp(), `[INFO] Tentativa ${retryCount}/${maxRetries}...`);
+            socket = connect();
+        }, 2000);
+    } else {
+        console.log(timestamp(), "[ERROR] Número máximo de tentativas atingido.");
+    }
+}
+
+/**
+ * Envia uma mensagem ao servidor WebSocket
+ * @param {string} message
+ */
+function sendMessage(message) {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(message);
+        console.log(timestamp(), "[SENT]", message);
+    } else {
+        console.error(timestamp(), "[ERROR] WebSocket não está conectado.");
+    }
+}
+
+socket = connect();
+
+export { sendMessage };
