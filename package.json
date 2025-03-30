@@ -7,7 +7,8 @@
   },
   "scripts": {
     "start": "node --watch src/server.mjs",
-    "ping": "node --watch src/client.mjs"
+    "ping": "node --watch src/client.mjs",
+    "send": "node --watch src/cli.mjs"
   },
   "repository": {
     "type": "git",
