@@ -23,21 +23,26 @@ wss.on('connection', (socket) => {
     console.log(timestamp(), `[INFO] Novo cliente conectado (${clients.size} online)`)
 
     socket.on('message', (data) => {
-        console.log(timestamp(), `[RECEIVED] ${data}`)
-
-        if (data === 'broadcast') {
+        if (data === 'ping') {
+            console.log(timestamp(), `[PING] Cliente ativo`)
+            socket.pong()
+            return
+        }
+        if (data === 'all') {
             clients.forEach(client => {
                 if (client !== socket && client.readyState === 1) {
-                    client.send(`[Broadcast] ${data}`)
+                    client.send(`[BROADCAST] ${data}`)
                 }
             })
+            return
         }
+        console.log(timestamp(), `[RECEIVED] ${data}`)
     })
 
-    socket.on('ping', () => {
-        console.log(timestamp(), `[PING] Cliente ativo`)
-        socket.pong()
-    })
+    // socket.on('ping', () => {
+    //     console.log(timestamp(), `[PING] Cliente ativo`)
+    //     socket.pong()
+    // })
 
     socket.on('close', () => {
         clients.delete(socket)

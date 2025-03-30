@@ -64,11 +64,13 @@ function reconnect() {
     }
 }
 
+socket = connect();
+
 /**
  * Envia uma mensagem ao servidor WebSocket
  * @param {string} message
  */
-function sendMessage(message) {
+export function sendMessage(message) {
     if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(message);
         console.log(timestamp(), "[SENT]", message);
@@ -76,7 +78,3 @@ function sendMessage(message) {
         console.error(timestamp(), "[ERROR] WebSocket não está conectado.");
     }
 }
-
-socket = connect();
-
-export { sendMessage };
