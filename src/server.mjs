@@ -1,9 +1,9 @@
-import { WebSocketServer } from 'ws';
+import { WebSocketServer } from 'ws'
 
-const { PORT = 8080 } = process.env;
-const timestamp = () => new Date().toISOString();
+const { PORT = 8080 } = process.env
+const timestamp = () => new Date().toISOString()
 
-const clients = new Set(); // Armazena os clientes conectados
+const clients = new Set()
 
 const wss = new WebSocketServer({
     port: PORT,
@@ -16,37 +16,39 @@ const wss = new WebSocketServer({
         concurrencyLimit: 10,
         threshold: 1024
     }
-});
+})
 
 wss.on('connection', (socket) => {
-    clients.add(socket);
-    console.log(timestamp(), `[INFO] Novo cliente conectado (${clients.size} online)`);
+    clients.add(socket)
+    console.log(timestamp(), `[INFO] Novo cliente conectado (${clients.size} online)`)
 
     socket.on('message', (data) => {
-        console.log(timestamp(), `[RECEIVED] ${data}`);
-        // Broadcast opcional
-        clients.forEach(client => {
-            if (client !== socket && client.readyState === 1) {
-                client.send(`[Broadcast] ${data}`);
-            }
-        });
-    });
+        console.log(timestamp(), `[RECEIVED] ${data}`)
+
+        if (data === 'broadcast') {
+            clients.forEach(client => {
+                if (client !== socket && client.readyState === 1) {
+                    client.send(`[Broadcast] ${data}`)
+                }
+            })
+        }
+    })
 
     socket.on('ping', () => {
-        console.log(timestamp(), `[PING] Cliente ativo`);
-        socket.pong();
-    });
+        console.log(timestamp(), `[PING] Cliente ativo`)
+        socket.pong()
+    })
 
     socket.on('close', () => {
-        clients.delete(socket);
-        console.log(timestamp(), `[INFO] Cliente desconectado (${clients.size} online)`);
-    });
+        clients.delete(socket)
+        console.log(timestamp(), `[INFO] Cliente desconectado (${clients.size} online)`)
+    })
 
     socket.on('error', (err) => {
-        console.error(timestamp(), `[ERROR]`, err);
-    });
-});
+        console.error(timestamp(), `[ERROR]`, err)
+    })
+})
 
 wss.on('listening', () => {
-    console.log(timestamp(), `[INFO] Servidor WebSocket escutando na porta ${PORT}`);
-});
+    console.log(timestamp(), `[INFO] Servidor WebSocket escutando na porta ${PORT}`)
+})
