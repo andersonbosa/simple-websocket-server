@@ -20,5 +20,11 @@
   "bugs": {
     "url": "https://github.com/andersonbosa/simple-websocket-server/issues"
   },
-  "homepage": "https://github.com/andersonbosa/simple-websocket-server#readme"
+  "homepage": "https://github.com/andersonbosa/simple-websocket-server#readme",
+  "optionalDependencies": {
+    "bufferutil": "^4.0.9"
+  },
+  "dependencies": {
+    "ws": "^8.18.1"
+  }
 }
