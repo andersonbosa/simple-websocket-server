@@ -2,12 +2,12 @@
   "name": "simple-websocket-server",
   "version": "1.0.0",
   "description": "[![Creative Commons](https://img.shields.io/badge/license-CC0_1.0-blue.svg?style=flat)](http://creativecommons.org/publicdomain/zero/1.0/)\r [![](https://img.shields.io/badge/contributions-WELCOME-green)](#)\r [![](https://img.shields.io/badge/made_with-LOVE-red)](#)",
-  "main": "index.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node --watch src/server.mjs",
+    "ping": "node --watch src/client.mjs"
   },
   "repository": {
     "type": "git",
