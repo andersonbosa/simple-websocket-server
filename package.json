@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node --watch src/server.mjs",
     "ping": "node --watch src/client.mjs",
+    "multi": "node --watch src/multiple-clients.mjs",
     "send": "node --watch src/cli.mjs"
   },
   "repository": {
